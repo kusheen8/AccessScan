@@ -5,8 +5,8 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "start": "node index.js"
-  },
+  "start": "node index.js"
+},
   "keywords": [],
   "author": "",
   "license": "ISC",
@@ -16,6 +16,6 @@
     "express": "^5.1.0",
     "node-fetch": "^3.3.2",
     "pa11y": "^8.0.0",
-    "puppeteer": "^24.37.5"
+    "puppeteer": "^19.11.1"
   }
 }
