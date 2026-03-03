@@ -1,26 +1,11 @@
 import express from "express";
 import pa11y from "pa11y";
 import dotenv from "dotenv";
-import path from "path";
-import { fileURLToPath } from "url";
 
 dotenv.config();
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
 const app = express();
 const PORT = process.env.PORT || 5000;
-
-// ✅ Get API Key (can be empty - will use fallback)
-const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY || "";
-const HF_API_KEY = process.env.HF_API_KEY || "";
-
-if (!OPENROUTER_API_KEY && !HF_API_KEY) {
-  console.warn(
-    "⚠️  WARNING: No API keys configured. Will use fallback suggestions."
-  );
-}
 
 app.use(express.json());
 app.use(express.static("public"));
@@ -35,28 +20,28 @@ app.post("/api/test", testAccessibility);
 app.get("/api/test", testAccessibility);
 
 async function testAccessibility(req, res) {
-  // Accept URL from body (POST) or query (GET)
-  const targetUrl = req.body?.url || req.query?.url;
-
-  // ✅ Proper validation
-  if (!targetUrl || typeof targetUrl !== "string") {
-    return res.status(400).json({
-      success: false,
-      error: "URL is required and must be a string",
-    });
-  }
-
-  // ✅ URL format validation
   try {
-    new URL(targetUrl);
-  } catch {
-    return res.status(400).json({
-      success: false,
-      error: "Invalid URL format (e.g., https://example.com)",
-    });
-  }
+    // Accept URL from body (POST) or query (GET)
+    const targetUrl = req.body?.url || req.query?.url;
 
-  try {
+    // ✅ Proper validation
+    if (!targetUrl || typeof targetUrl !== "string") {
+      return res.status(400).json({
+        success: false,
+        error: "URL is required and must be a string",
+      });
+    }
+
+    // ✅ URL format validation
+    try {
+      new URL(targetUrl);
+    } catch {
+      return res.status(400).json({
+        success: false,
+        error: "Invalid URL format (e.g., https://example.com)",
+      });
+    }
+
     console.log(`🔍 Testing accessibility for: ${targetUrl}`);
 
     // ✅ Timeout wrapper for pa11y
@@ -83,82 +68,31 @@ async function testAccessibility(req, res) {
 
     console.log(`✅ Found ${issues.length} accessibility issues`);
 
-    // ✅ Better error handling in Promise.all
-    const enhancedIssues = await Promise.all(
-      issues.map(async (issue) => {
-        try {
-          // Safely get issue type
-          const type = issue?.type?.toLowerCase?.() || "unknown";
+    // ✅ Add smart suggestions to each issue
+    const enhancedIssues = issues.map((issue) => {
+      const type = issue?.type?.toLowerCase?.() || "unknown";
 
-          issue.severity =
-            type === "error"
-              ? "Critical"
-              : type === "warning"
-              ? "Moderate"
-              : "Minor";
+      issue.severity =
+        type === "error"
+          ? "Critical"
+          : type === "warning"
+          ? "Moderate"
+          : "Minor";
 
-          // ✅ Better prompt & error handling for AI
-          const prompt = `Provide a short accessibility fix in 1-2 sentences:
-Issue: ${issue.message || "Unknown"}
-Element: ${issue.selector || "N/A"}
-Code: ${issue.code || "N/A"}`;
+      // ✅ Use smart fallback suggestions
+      issue.aiSuggestion = getSuggestion(issue);
 
-          // Try OpenRouter first, then HF, then fallback
-          if (OPENROUTER_API_KEY) {
-            try {
-              console.log("🤖 Requesting AI suggestion via OpenRouter...");
-              issue.aiSuggestion = await getOpenRouterSuggestion(
-                prompt,
-                OPENROUTER_API_KEY
-              );
-            } catch (aiError) {
-              console.error("❌ OpenRouter error:", aiError.message);
-              // Try HF as fallback
-              if (HF_API_KEY) {
-                try {
-                  issue.aiSuggestion = await getHFSuggestion(
-                    prompt,
-                    HF_API_KEY
-                  );
-                } catch (hfError) {
-                  console.error("❌ HF API error:", hfError.message);
-                  issue.aiSuggestion = fallbackSuggestion(issue);
-                }
-              } else {
-                issue.aiSuggestion = fallbackSuggestion(issue);
-              }
-            }
-          } else if (HF_API_KEY) {
-            try {
-              console.log("🤖 Requesting AI suggestion via HuggingFace...");
-              issue.aiSuggestion = await getHFSuggestion(prompt, HF_API_KEY);
-            } catch (hfError) {
-              console.error("❌ HF API error:", hfError.message);
-              issue.aiSuggestion = fallbackSuggestion(issue);
-            }
-          } else {
-            issue.aiSuggestion = fallbackSuggestion(issue);
-          }
+      return issue;
+    });
 
-          return issue;
-        } catch (mapError) {
-          console.error("❌ Error processing issue:", mapError);
-          return {
-            ...issue,
-            aiSuggestion: fallbackSuggestion(issue),
-          };
-        }
-      })
-    );
-
-    // ✅ Success response with metadata
-    res.status(200).json({
+    // ✅ Success response
+    return res.status(200).json({
       success: true,
       url: targetUrl,
       issues: enhancedIssues,
     });
   } catch (err) {
-    console.error("❌ Accessibility test error:", err.message, err.stack);
+    console.error("❌ Error:", err.message);
 
     // ✅ More specific error responses
     let statusCode = 500;
@@ -166,19 +100,23 @@ Code: ${issue.code || "N/A"}`;
 
     if (err.message.includes("timeout")) {
       statusCode = 504;
-      errorMessage = "Website took too long to analyze";
+      errorMessage = "Website took too long to analyze. Please try again.";
     } else if (
       err.message.includes("ERR_INVALID_URL") ||
-      err.message.includes("ENOTFOUND")
+      err.message.includes("ENOTFOUND") ||
+      err.message.includes("getaddrinfo")
     ) {
       statusCode = 400;
-      errorMessage = "Invalid or unreachable URL";
+      errorMessage = "Website not found or unreachable. Check the URL and try again.";
     } else if (err.message.includes("ECONNREFUSED")) {
       statusCode = 400;
-      errorMessage = "Connection refused by the website";
+      errorMessage = "Cannot connect to website. Make sure it's online.";
+    } else if (err.message.includes("Chrome") || err.message.includes("Chromium")) {
+      statusCode = 503;
+      errorMessage = "Service temporarily unavailable. Please try again in a moment.";
     }
 
-    res.status(statusCode).json({
+    return res.status(statusCode).json({
       success: false,
       error: errorMessage,
       details: process.env.NODE_ENV === "development" ? err.message : undefined,
@@ -186,110 +124,58 @@ Code: ${issue.code || "N/A"}`;
   }
 }
 
-// ✅ OpenRouter API Function
-async function getOpenRouterSuggestion(prompt, apiKey) {
-  try {
-    const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${apiKey}`,
-      },
-      body: JSON.stringify({
-        model: "mistralai/mistral-7b-instruct",
-        messages: [
-          {
-            role: "user",
-            content: prompt,
-          },
-        ],
-        max_tokens: 80,
-        temperature: 0.3,
-      }),
-    });
-
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.error?.message || "OpenRouter API error");
-    }
-
-    const data = await response.json();
-    const suggestion =
-      data.choices?.[0]?.message?.content?.trim() || null;
-
-    if (!suggestion) {
-      throw new Error("No response from OpenRouter");
-    }
-
-    return suggestion;
-  } catch (error) {
-    throw new Error(`OpenRouter: ${error.message}`);
-  }
-}
-
-// ✅ HuggingFace API Function (for fallback)
-async function getHFSuggestion(prompt, apiKey) {
-  try {
-    const response = await fetch(
-      "https://api-inference.huggingface.co/models/gpt2",
-      {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${apiKey}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          inputs: prompt,
-          parameters: {
-            max_new_tokens: 80,
-            temperature: 0.3,
-          },
-        }),
-      }
-    );
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(errorText || `HTTP ${response.status}`);
-    }
-
-    const data = await response.json();
-    
-    // Handle array response from HF
-    if (Array.isArray(data) && data[0]?.generated_text) {
-      const suggestion = data[0].generated_text
-        .replace(prompt, "")
-        .trim();
-      
-      if (suggestion) return suggestion;
-    }
-    
-    throw new Error("No valid response from HuggingFace");
-  } catch (error) {
-    throw new Error(`HuggingFace: ${error.message}`);
-  }
-}
-
-// ✅ Fallback suggestion
-function fallbackSuggestion(issue) {
+// ✅ Smart suggestion generator
+function getSuggestion(issue) {
   const msg = (issue?.message || "").toLowerCase();
+  const code = (issue?.code || "").toLowerCase();
 
-  if (msg.includes("alt") || msg.includes("image"))
-    return "Add descriptive alt text for all images to help screen readers.";
-  if (msg.includes("contrast"))
-    return "Increase color contrast to meet WCAG AA standards (at least 4.5:1).";
-  if (msg.includes("heading"))
-    return "Use proper hierarchical heading structure (h1, h2, h3...).";
-  if (msg.includes("label") || msg.includes("form"))
-    return "Add associated label elements for all form inputs.";
-  if (msg.includes("link"))
-    return "Use descriptive link text that explains the destination.";
-  if (msg.includes("aria"))
-    return "Ensure ARIA attributes are valid and necessary for functionality.";
-  if (msg.includes("landmark"))
-    return "Use semantic HTML5 landmarks (nav, main, aside, footer).";
+  // Image/Alt text issues
+  if (msg.includes("alt") || code.includes("h37") || msg.includes("image")) {
+    return "Add descriptive alt text to all images. Use text that describes the image content and purpose, not just the filename.";
+  }
 
-  return "Review WCAG 2.1 accessibility guidelines for compliance.";
+  // Contrast issues
+  if (msg.includes("contrast") || code.includes("contrast")) {
+    return "Increase color contrast between text and background. Aim for at least 4.5:1 ratio for normal text to meet WCAG AA standards.";
+  }
+
+  // Heading issues
+  if (msg.includes("heading") || code.includes("heading")) {
+    return "Use proper heading hierarchy (h1, h2, h3). Don't skip heading levels, and use only one h1 per page.";
+  }
+
+  // Form/Label issues
+  if (msg.includes("label") || msg.includes("form") || code.includes("label")) {
+    return "Associate each form input with a label using the <label> tag and for attribute to make inputs accessible to screen readers.";
+  }
+
+  // Link issues
+  if (msg.includes("link") || code.includes("link")) {
+    return "Use descriptive link text that explains where the link goes. Avoid generic text like 'Click here' or 'Read more'.";
+  }
+
+  // ARIA issues
+  if (msg.includes("aria")) {
+    return "Ensure ARIA attributes are used correctly and only when necessary. Use semantic HTML elements whenever possible instead.";
+  }
+
+  // Landmark issues
+  if (msg.includes("landmark") || msg.includes("main")) {
+    return "Use semantic HTML5 landmark elements like <nav>, <main>, <aside>, and <footer> to structure page content.";
+  }
+
+  // Button issues
+  if (msg.includes("button")) {
+    return "Use semantic button elements (<button>) instead of div or other elements. Ensure buttons have descriptive labels.";
+  }
+
+  // Text issues
+  if (msg.includes("text") && (msg.includes("color") || msg.includes("background"))) {
+    return "Ensure text is readable with sufficient color contrast and appropriate font sizes.";
+  }
+
+  // Default suggestion
+  return "Review WCAG 2.1 Level AA guidelines to fix this accessibility issue.";
 }
 
 // ✅ Global error handler
@@ -303,8 +189,7 @@ app.use((err, req, res, next) => {
   res.status(500).json({
     success: false,
     error: "Internal server error",
-    message:
-      process.env.NODE_ENV === "development" ? err.message : undefined,
+    message: process.env.NODE_ENV === "development" ? err.message : undefined,
   });
 });
 
@@ -319,11 +204,5 @@ process.on("SIGTERM", () => {
 const server = app.listen(PORT, () => {
   console.log(`✅ Server running on port ${PORT}`);
   console.log(`📍 API endpoint: POST/GET http://localhost:${PORT}/api/test`);
-  if (OPENROUTER_API_KEY) {
-    console.log(`🤖 AI Provider: OpenRouter (FREE)`);
-  } else if (HF_API_KEY) {
-    console.log(`🤖 AI Provider: HuggingFace`);
-  } else {
-    console.log(`🤖 AI Provider: Fallback (No API key)`);
-  }
+  console.log(`🤖 AI Provider: Smart Fallback Suggestions`);
 });
