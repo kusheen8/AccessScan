@@ -36,6 +36,17 @@ body {
     box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
 }
 
+.btn-outline-primary {
+    border: 2px solid #667eea;
+    color: #667eea;
+}
+
+.btn-outline-primary:hover {
+    background: #667eea;
+    border-color: #667eea;
+    color: white;
+}
+
 .loader { 
     display: none; 
 }
@@ -137,6 +148,16 @@ body {
     box-shadow: 0 4px 12px rgba(40, 167, 69, 0.2);
 }
 
+.alert-info {
+    background: linear-gradient(135deg, #17a2b8 0%, #138496 100%);
+    border: none;
+    color: white;
+    font-weight: 600;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 4px 12px rgba(23, 162, 184, 0.2);
+}
+
 #issues {
     max-height: 600px;
     overflow-y: auto;
@@ -182,5 +203,317 @@ body {
     
     .card-body h5 {
         font-size: 1rem;
+    }
+}
+
+/* ✅ Additional styling for better UX */
+
+.input-group {
+    gap: 8px;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.form-control {
+    border-radius: 8px;
+    border: 1px solid #e0e0e0;
+    padding: 10px 15px;
+    transition: all 0.3s ease;
+}
+
+.form-control:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.text-end {
+    margin-top: 15px;
+}
+
+.btn-sm {
+    padding: 6px 16px;
+    font-size: 0.875rem;
+}
+
+.card {
+    border-radius: 12px;
+    margin-bottom: 16px;
+    padding: 0;
+}
+
+.card-body {
+    padding: 20px;
+}
+
+h4 {
+    font-weight: 700;
+    color: #2d3748;
+    margin-bottom: 8px;
+}
+
+.text-muted {
+    color: #6c757d !important;
+    font-size: 0.95rem;
+    margin-bottom: 20px;
+}
+
+/* Spinner styling */
+.spinner-border {
+    width: 3rem;
+    height: 3rem;
+    color: #667eea;
+    border-width: 0.4em;
+}
+
+.spinner-border-sm {
+    width: 1rem;
+    height: 1rem;
+    border-width: 0.25em;
+}
+
+/* Alert styling enhancements */
+.alert {
+    border-radius: 12px;
+    border: none;
+    margin-bottom: 20px;
+}
+
+.alert h5 {
+    margin: 0 0 10px 0;
+    font-weight: 700;
+}
+
+.alert p {
+    margin: 0;
+}
+
+.badge {
+    font-weight: 600;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 0.75rem;
+}
+
+.badge-danger {
+    background-color: #dc3545;
+}
+
+.badge-warning {
+    background-color: #ffc107;
+    color: #000;
+}
+
+.badge-success {
+    background-color: #28a745;
+}
+
+/* Download button specific */
+#downloadPdf {
+    transition: all 0.3s ease;
+}
+
+#downloadPdf:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+}
+
+#downloadPdf:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* ✅ Score Display Styling */
+.score-summary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 12px;
+    padding: 24px;
+    color: white;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 30px;
+    box-shadow: 0 8px 24px rgba(102, 126, 234, 0.3);
+    margin-bottom: 24px;
+}
+
+.score-display {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.score-circle {
+    width: 100px;
+    height: 100px;
+    background: white;
+    border-radius: 50%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.score-value {
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: #667eea;
+    line-height: 1;
+}
+
+.score-percent {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #667eea;
+}
+
+.score-info h5 {
+    color: white;
+    font-weight: 700;
+    margin: 0;
+}
+
+.score-info p {
+    opacity: 0.9;
+    font-size: 0.95rem;
+}
+
+.issues-summary {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.issues-summary p {
+    margin: 0;
+    font-weight: 600;
+}
+
+.badges-container {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    align-items: center;
+}
+
+.badges-container .badge {
+    font-size: 0.8rem;
+    padding: 8px 14px;
+    display: inline-block;
+    white-space: nowrap;
+}
+
+/* Responsive Score Display */
+@media (max-width: 768px) {
+    .score-summary {
+        flex-direction: column;
+        text-align: center;
+        gap: 20px;
+    }
+    
+    .score-display {
+        justify-content: center;
+        width: 100%;
+    }
+    
+    .score-circle {
+        width: 80px;
+        height: 80px;
+    }
+    
+    .score-value {
+        font-size: 2rem;
+    }
+    
+    .issues-summary {
+        text-align: left;
+        align-items: flex-start;
+    }
+    
+    .issues-summary .badge {
+        margin: 4px 4px 4px 0;
+        display: inline-block;
+    }
+    
+    .badges-container {
+        justify-content: flex-start;
+        gap: 8px;
+    }
+}
+
+@media (max-width: 480px) {
+    .score-summary {
+        padding: 16px;
+        gap: 12px;
+    }
+    
+    .score-display {
+        gap: 12px;
+    }
+    
+    .score-circle {
+        width: 70px;
+        height: 70px;
+    }
+    
+    .score-value {
+        font-size: 1.8rem;
+    }
+    
+    .score-percent {
+        font-size: 0.8rem;
+    }
+    
+    .score-info h5 {
+        font-size: 1rem;
+    }
+    
+    .score-info p {
+        font-size: 0.8rem;
+    }
+    
+    .issues-summary {
+        width: 100%;
+        gap: 10px;
+    }
+    
+    .issues-summary p {
+        margin-bottom: 8px;
+    }
+    
+    .badges-container {
+        justify-content: center;
+        gap: 8px;
+    }
+    
+    .badges-container .badge {
+        font-size: 0.7rem;
+        padding: 6px 10px;
+    }
+}
+
+/* Responsive improvements */
+@media (max-width: 600px) {
+    .input-group {
+        flex-direction: column;
+    }
+    
+    .input-group input,
+    .input-group button {
+        width: 100%;
+    }
+    
+    .card-body h5 {
+        font-size: 0.95rem;
+    }
+    
+    .badge-severity {
+        font-size: 0.65rem;
+        padding: 4px 8px;
+    }
+    
+    #issues {
+        max-height: 400px;
     }
 }
