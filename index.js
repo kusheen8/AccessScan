@@ -1,6 +1,7 @@
 import express from 'express';
 import pa11y from 'pa11y';
-import puppeteer from 'puppeteer';
+import puppeteer from 'puppeteer-core';
+import chromium from 'chrome-aws-lambda';
 import dotenv from 'dotenv';
 import { HfInference } from '@huggingface/inference';
 
@@ -29,17 +30,17 @@ app.get('/api/test', async (req, res) => {
     return res.status(400).json({ error: 'Invalid URL format' });
   }
 
+  let browser;
   try {
-    // Launch Puppeteer with Render-friendly settings
-    const browser = await puppeteer.launch({
-      headless: true, // run in headless mode
-      executablePath: puppeteer.executablePath(), // use Puppeteer's downloaded Chromium
-      args: ['--no-sandbox', '--disable-setuid-sandbox'] // required on Render
+    // Launch Puppeteer using chrome-aws-lambda (Vercel compatible)
+    browser = await puppeteer.launch({
+      args: chromium.args,
+      defaultViewport: chromium.defaultViewport,
+      executablePath: await chromium.executablePath,
+      headless: chromium.headless,
     });
 
-    const result = await pa11y(targetUrl, { browser });
-
-    await browser.close();
+    const result = await pa11y(targetUrl, { browser, timeout: 20000 });
 
     const issues = result.issues || [];
     const limitedIssues = issues.slice(0, 10);
@@ -59,7 +60,7 @@ Provide only the fix in 1-2 sentences.`;
             model: 'mistralai/Mistral-7B-Instruct-v0.2',
             messages: [{ role: 'user', content: prompt }],
             max_tokens: 100,
-            temperature: 0.3
+            temperature: 0.3,
           });
           issue.aiSuggestion = response.choices[0].message.content.trim();
         } catch {
@@ -70,10 +71,11 @@ Provide only the fix in 1-2 sentences.`;
     );
 
     res.status(200).json({ issues: enhancedIssues });
-
   } catch (err) {
-    console.error('Accessibility test error:', err);
+    console.error('Accessibility test error:', err.stack || err);
     res.status(500).json({ error: 'Failed to analyze website', details: err.message });
+  } finally {
+    if (browser) await browser.close();
   }
 });
 
