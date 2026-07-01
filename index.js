@@ -30,9 +30,11 @@ app.get('/api/test', async (req, res) => {
   }
 
   try {
-    // Launch Puppeteer with no-sandbox for Render
+    // Launch Puppeteer with Render-friendly settings
     const browser = await puppeteer.launch({
-      args: ['--no-sandbox', '--disable-setuid-sandbox']
+      headless: true, // run in headless mode
+      executablePath: puppeteer.executablePath(), // use Puppeteer's downloaded Chromium
+      args: ['--no-sandbox', '--disable-setuid-sandbox'] // required on Render
     });
 
     const result = await pa11y(targetUrl, { browser });
