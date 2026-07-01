@@ -1,32 +1,25 @@
 🌐 Accessit – Web Accessibility Analyzer
 
-Accessit is a web accessibility analyzer that checks websites for accessibility issues and classifies them as Critical, Moderate, or Minor (Red, Yellow, Green).
-It also integrates Hugging Face AI APIs to suggest intelligent fixes for the detected issues.
+Check website accessibility. Get AI-driven fix suggestions.
 
-🔧 Built With
+Accessit scans website URLs for accessibility issues and categorizes them as Critical, Moderate, or Minor (Red, Yellow, Green). It also uses Hugging Face AI to provide actionable suggestions to fix detected errors.
 
-JavaScript
-
-Express.js
-
-Pa11y
-
-Hugging Face API
-
-✨ Features
-
-🔍 Analyze website URLs for accessibility issues
-
-🟢 Categorized results by severity (Critical, Moderate, Minor)
-
-🤖 AI-powered fix suggestions for each issue
-
-📊 Clean, color-coded UI
-
-🧰 Tech Stack
-Language	Framework	Tool	AI Integration
+🛠️ Tech Stack
+Language	Framework	Accessibility Tool	AI Integration
 JavaScript	Express.js	Pa11y	Hugging Face API
-🚀 Local Setup
+📦 Features
+
+🔍 Website Analysis – Detect accessibility issues on any URL
+
+🟢 Severity Categorization – Critical, Moderate, Minor (Red, Yellow, Green)
+
+🤖 AI Fix Suggestions – Hugging Face provides error resolution tips
+
+📊 Color-Coded UI – Easy to read reports
+
+💻 Minimal Setup – Run locally with npm start
+
+🚀 Getting Started
 1️⃣ Clone the Repository
 git clone https://github.com/your-username/Accessit.git
 cd Accessit
@@ -34,13 +27,31 @@ cd Accessit
 2️⃣ Install Dependencies
 npm install
 
-3️⃣ Run the Project
+3️⃣ Start the Project
 npm start
 
 
-Then open http://localhost:5000
+Open http://localhost:5000
  in your browser.
+
+📸 Screenshots
+
+🏠 Home Page
+
+
+📋 Accessibility Report
+
+
+💬 AI Fix Suggestions
+
 
 👩‍💻 Author
 
 Kusheen Dhar
+💼 Computer Science Engineering Student | Full Stack Developer
+
+✅ Notes:
+
+No deployment yet, project runs locally.
+
+Designed for learning and demonstration of accessibility analysis using JS, Express, Pa11y, and AI integration.
