@@ -1,6 +1,6 @@
 import express from 'express';
 import pa11y from 'pa11y';
-import puppeteer from 'puppeteer';
+import puppeteer from 'puppeteer-core';
 import dotenv from 'dotenv';
 import { HfInference } from '@huggingface/inference';
 
@@ -39,9 +39,10 @@ app.get('/api/test', async (req, res) => {
   try {
     // ⭐ RAILWAY SAFE PUPPETEER LAUNCH
     browser = await puppeteer.launch({
-      args: ['--no-sandbox', '--disable-setuid-sandbox'],
-      headless: true,
-    });
+  args: ['--no-sandbox', '--disable-setuid-sandbox'],
+  headless: true,
+  executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || undefined,
+});
 
     const result = await pa11y(targetUrl, {
       browser,
