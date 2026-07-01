@@ -3,6 +3,7 @@ import dotenv from "dotenv";
 import pa11y from "pa11y";
 import { GoogleGenAI } from "@google/genai";
 import { rateLimit } from "express-rate-limit";
+import puppeteer from "puppeteer";
 
 dotenv.config();
 
@@ -181,14 +182,14 @@ async function runPa11yScan(targetUrl) {
 }
 
 async function runSinglePa11yScan(targetUrl) {
-  const executablePath =
-    process.env.PUPPETEER_EXECUTABLE_PATH || process.env.CHROME_BIN;
+  const executablePath = puppeteer.executablePath();
 
   const results = await pa11y(targetUrl, {
     standard: "WCAG2AA",
     timeout: SCAN_TIMEOUT,
     wait: SCAN_RENDER_WAIT,
     chromeLaunchConfig: {
+      executablePath,
       headless: true,
       args: [
         "--no-sandbox",
@@ -196,7 +197,6 @@ async function runSinglePa11yScan(targetUrl) {
         "--disable-dev-shm-usage",
         "--disable-gpu",
       ],
-      ...(executablePath ? { executablePath } : {}),
     },
   });
 
