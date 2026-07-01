@@ -14,6 +14,15 @@ app.get("/", (req, res) => {
   res.send("Accessibility Testing API is running");
 });
 
+app.get("/health", (req, res) => {
+  res.status(200).json({
+    status: "healthy",
+    message: "Server is running",
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime(),
+  });
+});
+
 // ✅ Support BOTH GET and POST
 app.post("/api/test", testAccessibility);
 app.get("/api/test", testAccessibility);
