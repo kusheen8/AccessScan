@@ -1,37 +1,50 @@
 # AccessScan
 
-AccessScan is a full-stack web accessibility analyzer that helps users review a website URL, identify common accessibility issues, and generate clear remediation guidance.
+AccessScan is a full-stack web accessibility analyzer that scans real websites, identifies WCAG accessibility issues, and provides AI-assisted remediation guidance.
 
-Live demo: [https://accessscan-1.onrender.com/]
+Live AWS deployment: [http://13.202.183.229/]
 
 ## Overview
 
-The application provides a simple interface for submitting a website URL and viewing an accessibility report. Results are grouped by severity so users can quickly understand which issues need immediate attention and what steps can help resolve them.
+AccessScan lets users submit a website URL and receive an accessibility report with issue severity, WCAG-related details, practical fix suggestions, and a downloadable PDF report. The backend performs real accessibility scans using Pa11y and enhances the results with AI-generated remediation guidance.
 
 ## Features
 
-- Analyze a website URL through a clean web interface.
-- Display accessibility issues with severity labels.
-- Categorize findings as Critical, Moderate, or Minor.
-- Provide practical fix suggestions for reported issues.
-- Generate a structured report view for review and documentation.
-- Expose a lightweight `/health` endpoint for uptime monitoring.
+- Real website accessibility scanning with Pa11y.
+- WCAG 2.1 AA issue detection.
+- Severity grouping for Critical, Moderate, and Minor issues.
+- AI remediation suggestions using Google Gemini, with Hugging Face and local fallback support.
+- PDF report generation from the scan results.
+- Accessibility score calculation.
+- `/health` endpoint for uptime checks.
+- AWS live deployment.
+- Integrated GitHub Actions deployment workflow.
+
+## Live Deployment
+
+The project is deployed on AWS and available at:
+
+[http://13.202.183.229/](http://13.202.183.229/)
 
 ## Tech Stack
 
 - Frontend: HTML, CSS, JavaScript
 - Backend: Node.js, Express.js
-- Runtime: Node.js
-- Deployment: Render
+- Accessibility Scanner: Pa11y, Puppeteer
+- AI Suggestions: Google Gemini, Hugging Face fallback, local fallback
+- Deployment: AWS
+- Workflow: GitHub Actions
 
 ## Project Structure
 
 ```text
 AccessScan/
+├── .github/workflows/
 ├── index.js
 ├── package.json
 ├── package-lock.json
 ├── public/
+├── puppeteer.config.cjs
 ├── screenshots/
 └── README.md
 ```
@@ -49,6 +62,16 @@ AccessScan/
 git clone https://github.com/kusheen8/AccessScan.git
 cd AccessScan
 npm install
+```
+
+### Environment Variables
+
+Create a `.env` file and add the required keys:
+
+```env
+GEMINI_API_KEY=your_google_gemini_api_key
+HUGGINGFACE_API_KEY=your_huggingface_api_key
+PORT=5000
 ```
 
 ### Run Locally
@@ -77,6 +100,10 @@ POST /api/test
 ```
 
 Analyzes the submitted URL and returns accessibility issues with severity and suggested fixes.
+
+## Deployment Workflow
+
+The repository includes an integrated GitHub Actions workflow for deployment automation. The workflow is configured under `.github/workflows/` and supports the AWS deployment process for the live application.
 
 ## Screenshots
 
