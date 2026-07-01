@@ -1,110 +1,98 @@
----
+# AccessScan
 
-# 🌐 AccessScan – AI-Powered Web Accessibility Analyzer
+AccessScan is a full-stack web accessibility analyzer that helps users review a website URL, identify common accessibility issues, and generate clear remediation guidance.
 
-Analyze website accessibility, generate structured reports, and receive AI-powered remediation suggestions.
+Live demo: [https://accessscan-1.onrender.com/]
 
-AccessScan is a full-stack web application that evaluates website URLs for accessibility violations using automated testing tools. It categorizes issues by severity, calculates an accessibility score, and enhances reports with AI-generated fix suggestions.
+## Overview
 
-🔗 **Live Demo:** [https://accessscan-1.onrender.com/](https://accessscan-1.onrender.com/)
+The application provides a simple interface for submitting a website URL and viewing an accessibility report. Results are grouped by severity so users can quickly understand which issues need immediate attention and what steps can help resolve them.
 
----
+## Features
 
-## 🚀 Features
+- Analyze a website URL through a clean web interface.
+- Display accessibility issues with severity labels.
+- Categorize findings as Critical, Moderate, or Minor.
+- Provide practical fix suggestions for reported issues.
+- Generate a structured report view for review and documentation.
+- Expose a lightweight `/health` endpoint for uptime monitoring.
 
-* 🔍 Analyze any public website URL for accessibility issues
-* 📊 Generate an overall Accessibility Score
-* 🟢 Categorize issues by severity:
+## Tech Stack
 
-  * Critical (Red)
-  * Moderate (Yellow)
-  * Minor (Green)
-* 🤖 AI-powered fix suggestions
-* 📄 Download structured PDF report
-* 🎨 Clean, color-coded user interface
-* 🌍 Fully deployed and publicly accessible
+- Frontend: HTML, CSS, JavaScript
+- Backend: Node.js, Express.js
+- Runtime: Node.js
+- Deployment: Render
 
----
+## Project Structure
 
-## 🛠️ Tech Stack
-
-| Frontend              | Backend             | Accessibility Engine | AI Integration   | Deployment |
-| --------------------- | ------------------- | -------------------- | ---------------- | ---------- |
-| HTML, CSS, JavaScript | Node.js, Express.js | Pa11y                | Hugging Face API | Render     |
-
----
-
-## ⚙️ System Workflow
-
-1. User submits a website URL.
-2. Backend scans the website using Pa11y.
-3. Issues are classified based on severity.
-4. Accessibility score is calculated.
-5. AI generates contextual improvement suggestions.
-6. A downloadable PDF report is generated.
-
----
-
-## 📸 Screenshots
-
-### 🏠 Home Page
-
-![Home Page](screenshots/homepage.png)
-
-### 📋 Accessibility Report
-
-![Report](screenshots/report.png)
-
-### 🤖 AI Fix Suggestions
-
-![AI Fix](screenshots/aifix.png)
-
----
-
-## 💻 Local Setup
-
-### 1️⃣ Clone the Repository
-
-```bash
-git clone https://github.com/your-username/AccessScan.git
-cd AccessScan
+```text
+AccessScan/
+├── index.js
+├── package.json
+├── package-lock.json
+├── public/
+├── screenshots/
+└── README.md
 ```
 
-### 2️⃣ Install Dependencies
+## Getting Started
+
+### Prerequisites
+
+- Node.js
+- npm
+
+### Installation
 
 ```bash
+git clone https://github.com/kusheen8/AccessScan.git
+cd AccessScan
 npm install
 ```
 
-### 3️⃣ Start the Server
+### Run Locally
 
 ```bash
 npm start
 ```
 
-Open your browser and visit:
+The server starts on port `5000` by default unless a different `PORT` value is provided.
 
+## API Endpoints
+
+### Health Check
+
+```http
+GET /health
 ```
-http://localhost:5000
+
+Returns a lightweight server status response for uptime monitoring.
+
+### Accessibility Test
+
+```http
+GET /api/test?url=<website-url>
+POST /api/test
 ```
 
----
+Analyzes the submitted URL and returns accessibility issues with severity and suggested fixes.
 
-## 📈 Project Highlights
+## Screenshots
 
-* Automated accessibility scanning
-* AI-enhanced remediation guidance
-* PDF report generation for audit documentation
-* Production deployment experience
+### Home Page
 
----
+![Home Page](screenshots/homepage.png)
 
-## 👩‍💻 Author
+### Accessibility Report
 
-**Kusheen Dhar**
+![Accessibility Report](screenshots/report.png)
+
+### Fix Suggestions
+
+![Fix Suggestions](screenshots/aifix.png)
+
+## Author
+
+Kusheen Dhar  
 Full Stack Developer
-
----
-
-
-
