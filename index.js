@@ -1,7 +1,6 @@
 import express from 'express';
 import pa11y from 'pa11y';
-import puppeteer from 'puppeteer-core';
-import chromium from 'chrome-aws-lambda';
+import puppeteer from 'puppeteer';
 import dotenv from 'dotenv';
 import { HfInference } from '@huggingface/inference';
 
@@ -9,7 +8,9 @@ dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 5000;
-const inference = new HfInference(process.env.HF_API_KEY);
+
+// ⭐ Initialize HuggingFace safely
+const inference = new HfInference(process.env.HF_API_KEY || '');
 
 app.use(express.json());
 app.use(express.static('public'));
@@ -22,7 +23,10 @@ app.get('/', (req, res) => {
 // Accessibility test endpoint
 app.get('/api/test', async (req, res) => {
   const targetUrl = req.query.url;
-  if (!targetUrl) return res.status(400).json({ error: 'URL is required' });
+
+  if (!targetUrl) {
+    return res.status(400).json({ error: 'URL is required' });
+  }
 
   try {
     new URL(targetUrl);
@@ -31,38 +35,57 @@ app.get('/api/test', async (req, res) => {
   }
 
   let browser;
+
   try {
-    // Launch Puppeteer using chrome-aws-lambda (Vercel compatible)
+    // ⭐ RAILWAY SAFE PUPPETEER LAUNCH
     browser = await puppeteer.launch({
-      args: chromium.args,
-      defaultViewport: chromium.defaultViewport,
-      executablePath: await chromium.executablePath,
-      headless: chromium.headless,
+      args: ['--no-sandbox', '--disable-setuid-sandbox'],
+      headless: true,
     });
 
-    const result = await pa11y(targetUrl, { browser, timeout: 20000 });
+    const result = await pa11y(targetUrl, {
+      browser,
+      timeout: 20000,
+      includeWarnings: true,
+      includeNotices: true,
+    });
 
     const issues = result.issues || [];
-    const limitedIssues = issues.slice(0, 10);
 
     const enhancedIssues = await Promise.all(
-      limitedIssues.map(async (issue) => {
-        const prompt = `You are an accessibility expert. Provide a brief, actionable fix for this WCAG issue:
+      issues.map(async (issue) => {
+
+        const type = issue.type?.toLowerCase();
+
+        issue.severity =
+          type === 'error' ? 'Critical' :
+          type === 'warning' ? 'Moderate' :
+          'Minor';
+
+        const prompt = `You are an accessibility expert.
+Provide a short actionable fix:
 
 Issue: ${issue.message}
 Element: ${issue.selector || 'N/A'}
 Code: ${issue.code}
 
-Provide only the fix in 1-2 sentences.`;
+Give only the fix in 1-2 sentences.`;
 
         try {
-          const response = await inference.chatCompletion({
-            model: 'mistralai/Mistral-7B-Instruct-v0.2',
-            messages: [{ role: 'user', content: prompt }],
-            max_tokens: 100,
-            temperature: 0.3,
-          });
-          issue.aiSuggestion = response.choices[0].message.content.trim();
+          if (process.env.HF_API_KEY) {
+            const response = await inference.chatCompletion({
+              model: 'mistralai/Mistral-7B-Instruct-v0.2',
+              messages: [{ role: 'user', content: prompt }],
+              max_tokens: 100,
+              temperature: 0.3,
+            });
+
+            issue.aiSuggestion =
+              response?.choices?.[0]?.message?.content?.trim() ||
+              fallbackSuggestion(issue);
+          } else {
+            issue.aiSuggestion = fallbackSuggestion(issue);
+          }
         } catch {
           issue.aiSuggestion = fallbackSuggestion(issue);
         }
@@ -72,17 +95,22 @@ Provide only the fix in 1-2 sentences.`;
     );
 
     res.status(200).json({ issues: enhancedIssues });
+
   } catch (err) {
     console.error('Accessibility test error:', err.stack || err);
-    res.status(500).json({ error: 'Failed to analyze website', details: err.message });
+    res.status(500).json({
+      error: 'Failed to analyze website',
+      details: err.message,
+    });
   } finally {
     if (browser) await browser.close();
   }
 });
 
-// Fallback suggestions
+// ⭐ Fallback suggestions
 function fallbackSuggestion(issue) {
   const msg = issue.message.toLowerCase();
+
   if (msg.includes('alt') || msg.includes('image')) return 'Add descriptive alt text.';
   if (msg.includes('contrast')) return 'Increase color contrast to meet WCAG.';
   if (msg.includes('heading')) return 'Use logical heading hierarchy.';
@@ -90,6 +118,7 @@ function fallbackSuggestion(issue) {
   if (msg.includes('link')) return 'Provide descriptive link text.';
   if (msg.includes('aria')) return 'Ensure ARIA attributes are valid.';
   if (msg.includes('landmark')) return 'Use semantic HTML5 landmarks.';
+
   return 'Review WCAG guidelines.';
 }
 
@@ -100,6 +129,5 @@ app.use((err, req, res, next) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
-  console.log(`Test endpoint: http://localhost:${PORT}/api/test?url=https://example.com`);
+  console.log(`Server running on port ${PORT}`);
 });
