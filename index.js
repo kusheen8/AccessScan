@@ -8,18 +8,18 @@ import { HfInference } from '@huggingface/inference';
 dotenv.config();
 
 const app = express();
-const PORT = process.env.PORT || 10000;
+const PORT = process.env.PORT || 5000;
 const inference = new HfInference(process.env.HF_API_KEY);
 
-app.use(express.static('public'));
 app.use(express.json());
+app.use(express.static('public'));
 
 // Health check
 app.get('/', (req, res) => {
   res.send('Accessibility Testing API is running');
 });
 
-// Accessibility test
+// Accessibility test endpoint
 app.get('/api/test', async (req, res) => {
   const targetUrl = req.query.url;
   if (!targetUrl) return res.status(400).json({ error: 'URL is required' });
@@ -66,6 +66,7 @@ Provide only the fix in 1-2 sentences.`;
         } catch {
           issue.aiSuggestion = fallbackSuggestion(issue);
         }
+
         return issue;
       })
     );
