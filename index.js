@@ -9,7 +9,7 @@ dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 5000;
-const SCAN_TIMEOUT = 60000;
+const SCAN_TIMEOUT = 120000;
 const SCAN_RENDER_WAIT = 2500;
 const SCAN_TIMEOUT_MESSAGE =
   "The website took too long to load or could not be scanned. Please try again later or use another website.";
@@ -191,11 +191,20 @@ async function runSinglePa11yScan(targetUrl) {
     chromeLaunchConfig: {
       executablePath,
       headless: true,
+      protocolTimeout: 180000,
+      ignoreHTTPSErrors: true,
       args: [
         "--no-sandbox",
         "--disable-setuid-sandbox",
         "--disable-dev-shm-usage",
         "--disable-gpu",
+        "--disable-extensions",
+        "--disable-background-networking",
+        "--disable-background-timer-throttling",
+        "--disable-backgrounding-occluded-windows",
+        "--disable-renderer-backgrounding",
+        "--no-first-run",
+        "--no-zygote",
       ],
     },
   });
